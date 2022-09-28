@@ -57,7 +57,6 @@
 #include "static_mem.h"
 #include "rateSupervisor.h"
 #include "CBC_Controller.h"
-
 static bool isInit;
 static bool emergencyStop = false;
 static int emergencyStopTimeout = EMERGENCY_STOP_TIMEOUT_DISABLED;

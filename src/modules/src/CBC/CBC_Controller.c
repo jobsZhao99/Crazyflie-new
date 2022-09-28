@@ -4,8 +4,9 @@
 #include "CBC_Quaternion.h"
 #include "stabilizer_types.h"
 #include "math3d.h"
-#include "debug.h"
 #include "math.h"
+
+// static CB_DesireState_t desireState;
 
 void CB_YawControl(CB_control_t *CB_control,CB_Vector3_t *directionF, const sensorData_t *sensors, const state_t *state,const uint32_t tick)
 {

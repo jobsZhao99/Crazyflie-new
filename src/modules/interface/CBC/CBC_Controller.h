@@ -2,7 +2,7 @@
 #ifndef _CBC_CONTROLLER_H_
 #define _CBC_CONTROLLER_H_
 #include "stabilizer_types.h"
-
+#include "CBC_Trajectory.h"
 // #define kp 36
 // #define kd 12
 
@@ -56,6 +56,7 @@ typedef struct CB_control_s {
   float torque_yaw;
   float thrust;
 }CB_control_t;
+
 
 
 void CB_Controller(CB_control_t *CB_control, setpoint_t *setpoint, const sensorData_t *sensors, const state_t *state,const uint32_t tick);
