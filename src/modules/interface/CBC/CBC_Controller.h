@@ -1,4 +1,3 @@
-
 #ifndef _CBC_CONTROLLER_H_
 #define _CBC_CONTROLLER_H_
 #include "stabilizer_types.h"
@@ -6,10 +5,6 @@
 // #define kp 36
 // #define kd 12
 
-#define desire_yaw 0.0f
-#define desire_x 0.0f
-#define desire_y 0.0f
-#define desire_z 0.5f
 
 #define kp 36
 #define kd 12

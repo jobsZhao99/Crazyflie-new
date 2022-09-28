@@ -6,7 +6,7 @@
 #include "num.h"
 #include "autoconf.h"
 #include "config.h"
-// #include "debug.h"
+#include "math.h"
 
 #ifndef CONFIG_MOTORS_DEFAULT_IDLE_THRUST
 #  define DEFAULT_IDLE_THRUST 0
@@ -32,14 +32,13 @@ void CB_powerDistribution(motors_thrust_t* motorPower, const CB_control_t *contr
 
   	if(control->thrust==0)
 	{
-
-	motorPower->m1=0;
-	motorPower->m2=0;
-	motorPower->m3=0;
-	motorPower->m4=0;
-
+		motorPower->m1=0;
+		motorPower->m2=0;
+		motorPower->m3=0;
+		motorPower->m4=0;
 	}
-	else{
+	else
+	{
 
 		
 		float a=0.25f,b=7.7f,c=41.9143f;
@@ -53,19 +52,10 @@ void CB_powerDistribution(motors_thrust_t* motorPower, const CB_control_t *contr
 		motorPower->m3=limitThrust(4.0f*(term1+term2+term3-term4)/(60.0f*9.81f*0.001f)*65535);
 		motorPower->m4=limitThrust(4.0f*(term1+term2-term3+term4)/(60.0f*9.81f*0.001f)*65535);
 
-
-		if (motorPower->m1 < idleThrust) {
-			motorPower->m1 = idleThrust;
-		}
-		if (motorPower->m2 < idleThrust) {
-			motorPower->m2 = idleThrust;
-		}
-		if (motorPower->m3 < idleThrust) {
-			motorPower->m3 = idleThrust;
-		}
-		if (motorPower->m4 < idleThrust) {
-			motorPower->m4 = idleThrust;
-		}
+		motorPower->m1=fmax(motorPower->m1,idleThrust);
+		motorPower->m2=fmax(motorPower->m2,idleThrust);
+		motorPower->m3=fmax(motorPower->m3,idleThrust);
+		motorPower->m4=fmax(motorPower->m4,idleThrust);
     
 	}
 }

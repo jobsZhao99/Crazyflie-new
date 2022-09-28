@@ -2,20 +2,20 @@
 #define _CBC_Trajectory_h_
 // #include "math.h"
 #include "stabilizer_types.h"
-// #include "debug.h"
 
 
 
 
-typedef struct CB_DesireState_s
+typedef struct CB_State_s
 {
     float x;
     float y;
     float z;
     float yaw;
-}CB_DesireState_t;
+}CB_State_t;
 
-bool CB_Planner_Init(uint32_t tick);
-bool CB_NextState(uint32_t tick,CB_DesireState_t *desireState);
+bool CB_Planner_Init(uint32_t tick,CB_State_t state);
+bool CB_Planner_test();
+bool CB_NextState(uint32_t tick,CB_State_t *desireState);
 
 #endif

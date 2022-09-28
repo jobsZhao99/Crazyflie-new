@@ -2,11 +2,16 @@
 #include "CBC_Controller.h"
 #include "CBC_Vector.h"
 #include "CBC_Quaternion.h"
+#include "CBC_Trajectory.h"
 #include "stabilizer_types.h"
 #include "math3d.h"
 #include "math.h"
-
-// static CB_DesireState_t desireState;
+#include "debug.h"
+static CB_State_t desireState;
+static float desire_yaw;
+static float desire_x;
+static float desire_y;
+static float desire_z;
 
 void CB_YawControl(CB_control_t *CB_control,CB_Vector3_t *directionF, const sensorData_t *sensors, const state_t *state,const uint32_t tick)
 {
@@ -77,6 +82,27 @@ void CB_Controller(CB_control_t *CB_control, setpoint_t *setpoint, const sensorD
 {
 		if(setpoint->thrust>2000.0f)
 		{
+			// Initial CB Trajectory
+			if(!CB_Planner_test())
+			{
+				
+				CB_State_t tempState={.x=state->position.x,.y=state->position.y,.z=state->position.z,.yaw=state->attitude.yaw};
+				if(CB_Planner_Init(tick,tempState))
+				{
+					DEBUG_PRINT("CBC NOTICE: Trajectory Initialized at (%ld)!/nTrajecory origin will base on (%f)(%f)(%f)(%f)\n",
+							tick,(double)tempState.x,(double)tempState.y,(double)tempState.z,(double)tempState.yaw);
+				}
+				else
+				{
+					DEBUG_PRINT("CBC WARNING: Trajectory Initialize failed");
+				}
+			}
+			CB_NextState(tick,&desireState);
+			desire_x=desireState.x;
+			desire_y=desireState.y;
+			desire_z=desireState.z;
+			desire_yaw=desireState.yaw;
+
 			CB_Vector3_t DirectionF;
 			CB_PositionControl(CB_control,&DirectionF,state,tick);
 			CB_YawControl(CB_control,&DirectionF, sensors, state,tick);

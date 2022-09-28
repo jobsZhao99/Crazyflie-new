@@ -3,9 +3,14 @@
 #include "debug.h"
 static float TimeRate = RATE_MAIN_LOOP;
 static bool TrajIsInit=false;
+static CB_State_t StartState;
 static uint32_t StartTime;
 
-bool CB_Planner_Init(uint32_t tick)
+/// @brief 
+/// @param tick 
+/// @param state Start state
+/// @return 
+bool CB_Planner_Init(uint32_t tick,CB_State_t state)
 {
     if(TrajIsInit)
     {
@@ -18,12 +23,23 @@ bool CB_Planner_Init(uint32_t tick)
         TimeRate=RATE_MAIN_LOOP;
         return TrajIsInit=true;
     }
-    
 }
-bool CB_NextState(uint32_t tick,CB_DesireState_t *desireState)
+
+bool CB_Planner_test()
 {
-    float runtime = (float)(StartTime-tick)/1000;
-    desireState->x=sin(runtime);
+    return TrajIsInit;
+}
+bool CB_NextState(uint32_t tick,CB_State_t *desireState)
+{
+    // float runtime = (float)(StartTime-tick)/1000.0f;
+    desireState->x=StartState.x;
+    desireState->y=StartState.y;
+    desireState->y=0.5;
+    desireState->yaw=0;
     return true;
 }
+
+
+
+
 
