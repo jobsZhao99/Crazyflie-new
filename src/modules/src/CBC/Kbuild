@@ -1,0 +1,5 @@
+obj-y += CBC_Quaternion.o
+obj-y += CBC_Vector.o
+obj-y += CBC_Power_distribution.o
+obj-y += CBC_Trajectory.o
+obj-y += CBC_Controller.o
