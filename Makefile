@@ -19,7 +19,7 @@ endif
 
 DFU_UTIL          ?= dfu-util
 
-CLOAD_CMDS        ?=-w radio://0/80/2M
+CLOAD_CMDS        ?=-w radio://0/85/2M
 CLOAD_ARGS        ?=
 
 ARCH := stm32f4

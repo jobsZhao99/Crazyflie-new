@@ -12,22 +12,24 @@ static float desire_yaw;
 static float desire_x;
 static float desire_y;
 static float desire_z;
-
-void CB_YawControl(CB_control_t *CB_control,CB_Vector3_t *directionF, const sensorData_t *sensors, const state_t *state,const uint32_t tick)
+static CB_Vector3_t DirectionF;
+void CB_YawControl(CB_control_t *CB_control, const sensorData_t *sensors, const state_t *state,const uint32_t tick)
 {
+
     CB_Vector3_t u1,u2,u3,u2t;
-    u3=*directionF;
+    u3=DirectionF;
     u2t=(CB_Vector3_t){.x=-sin( desire_yaw ),.y=cos(desire_yaw),.z=0.0f};
 	u1=Vector3Cross(u2t,u3);
-    u1=Vector3Normalize(u1);
+    Vector3Normalize(&u1);
 	u2=Vector3Cross(u3,u1);
-	u1=Vector3Normalize(u1);
+	Vector3Normalize(&u2);
     // float R[3][3]={{u1.x,u2.x,u3.x},{u1.y,u2.y,u3.y},{u1.z,u2.z,u3.z}};
 	quaternion_t desire_q= DCM2UnitQuat(u1,u2,u3);
-	
+	quaternion_t real_q=state->attitudeQuaternion;
 	//qd * q*
-	quaternion_t delta_q = quaternionDivide(desire_q,state->attitudeQuaternion);
-
+	quaternion_t delta_q = quaternionDivide(desire_q,real_q);
+	QuaternionShortArc(&delta_q);
+	delta_q=QuaternionRotation(quaternionConjugate(real_q),delta_q);
 	// if(tick%1000==0)
 	// 	DEBUG_PRINT("(%f)\t(%f)\t(%f)\t(%f)\n",(double)state->attitudeQuaternion.w,(double)state->attitudeQuaternion.x,(double)state->attitudeQuaternion.y,(double)state->attitudeQuaternion.z);
 	
@@ -49,10 +51,12 @@ void CB_YawControl(CB_control_t *CB_control,CB_Vector3_t *directionF, const sens
 	CB_control->torque_roll =r*Ixx+p*Ixy+y*Ixz+WjW.x;
 	CB_control->torque_pitch=r*Ixy+p*Iyy+y*Iyz+WjW.y;
 	CB_control->torque_yaw  =r*Ixz+p*Iyz+y*Izz+WjW.z;
+	// if(tick%100==0)
+	// DEBUG_PRINT("CBC_YAW %f\n",(double)CB_control->torque_yaw);
 }
 
 
-void CB_PositionControl(CB_control_t *CB_control,CB_Vector3_t *directionF, const state_t *state,const uint32_t tick)
+void CB_PositionControl(CB_control_t *CB_control, const state_t *state,const uint32_t tick)
 {
 	float x=Kp_X*(desire_x-state->position.x)+Kd_X*(0.0f-state->velocity.x);
 	float y=Kp_Y*(desire_y-state->position.y)+Kd_Y*(0.0f-state->velocity.y);
@@ -63,53 +67,51 @@ void CB_PositionControl(CB_control_t *CB_control,CB_Vector3_t *directionF, const
    	y = fminf(fmaxf(y,-MaxAcc),MaxAcc);
    	z = fminf(fmaxf(z,-MaxAcc),MaxAcc);
 
-     
-	directionF->x=x;
-	directionF->y=y;
-	directionF->z=z+gravity;
+    
+	DirectionF.x=x;
+	DirectionF.y=y;
+	DirectionF.z=z+gravity;
 
 	// this two step can not be exchange
-	CB_control->thrust=Vector3Norm(*directionF)*mass;
-	*directionF = Vector3Normalize(*directionF);
+	CB_control->thrust=Vector3Norm(DirectionF)*mass;
+	Vector3Normalize(&DirectionF);
 	
 }
 
-const float thrust;
-const float roll;
-const float pitch;
-const float yaw;
+
 void CB_Controller(CB_control_t *CB_control, setpoint_t *setpoint, const sensorData_t *sensors, const state_t *state,const uint32_t tick)
 {
-		if(setpoint->thrust>2000.0f)
+		if(setpoint->thrust>2000.0f||CB_Planner_test())
 		{
 			// Initial CB Trajectory
 			if(!CB_Planner_test())
 			{
 				
-				CB_State_t tempState={.x=state->position.x,.y=state->position.y,.z=state->position.z,.yaw=state->attitude.yaw};
-				if(CB_Planner_Init(tick,tempState))
-				{
-					DEBUG_PRINT("CBC NOTICE: Trajectory Initialized at (%ld)!/nTrajecory origin will base on (%f)(%f)(%f)(%f)\n",
-							tick,(double)tempState.x,(double)tempState.y,(double)tempState.z,(double)tempState.yaw);
-				}
-				else
-				{
-					DEBUG_PRINT("CBC WARNING: Trajectory Initialize failed");
-				}
+				CB_State_t tempState={.x=state->position.x,.y=state->position.y,.z=state->position.z,.yaw=(state->attitude.yaw/180.0f*M_PI_F)};
+				CB_Planner_Init(tick,tempState);
 			}
-			CB_NextState(tick,&desireState);
+			if(setpoint->thrust<2000.f)
+			{
+				CB_Planner_DisAbled(state->position.z);
+			}
+			CB_NextState(tick,&desireState,state->position.z);
 			desire_x=desireState.x;
 			desire_y=desireState.y;
 			desire_z=desireState.z;
 			desire_yaw=desireState.yaw;
-
-			CB_Vector3_t DirectionF;
-			CB_PositionControl(CB_control,&DirectionF,state,tick);
-			CB_YawControl(CB_control,&DirectionF, sensors, state,tick);
+			// DEBUG_PRINT("CBC NOTICE:desire state (%f)\t(%f)\t(%f)\t(%f)\n",(double)desire_x,(double)desire_y,(double)desire_z,(double)desire_yaw);
+			
+			
+			CB_PositionControl(CB_control,state,tick);
+			CB_YawControl(CB_control, sensors, state,tick);
 			
 		}
 		else
 		{
+			if(CB_Planner_test())
+			{
+				CB_Planner_DisAbled(state->position.z);
+			}
 			CB_control->thrust=0;
 			CB_control->torque_pitch=0;
 			CB_control->torque_pitch=0;

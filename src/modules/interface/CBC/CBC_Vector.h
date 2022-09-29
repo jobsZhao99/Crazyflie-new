@@ -16,5 +16,5 @@ float Vector3Norm(CB_Vector3_t input);
 
 // output=VA*VB
 CB_Vector3_t Vector3Cross(CB_Vector3_t VA,CB_Vector3_t VB);
-CB_Vector3_t Vector3Normalize(CB_Vector3_t input);
+void Vector3Normalize(CB_Vector3_t *input);
 #endif

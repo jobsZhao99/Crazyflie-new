@@ -2,37 +2,57 @@
 // #include "CBC_Vector.h"
 #include "debug.h"
 #include "math.h"
-quaternion_t quaternionMultiply(quaternion_t q, quaternion_t p)
+void QuaternionNormalize(quaternion_t *q);
+void QuaternionShortArc(quaternion_t *q)
 {
-	float w =   q.w * p.w - q.x * p.x - q.y * p.y - q.z * p.z;
-	float x =   q.w * p.x + q.x * p.w + q.y * p.z - q.z * p.y;
-	float y =   q.w * p.y - q.x * p.z + q.y * p.w + q.z * p.x;
-	float z =   q.w * p.z + q.x * p.y - q.y * p.x + q.z * p.w;
-	return (quaternion_t){.w = w,.x = x, .y = y, .z = z};
+    if(q->w<0.0f)
+    {
+        q->w*=-1.0f;
+        q->x*=-1.0f;
+        q->y*=-1.0f;
+        q->z*=-1.0f;
+    }
 }
 
+quaternion_t quaternionMultiply(quaternion_t q, quaternion_t p)
+{
+    quaternion_t Q;
+
+	Q.w =   q.w * p.w - q.x * p.x - q.y * p.y - q.z * p.z;
+	Q.x =   q.w * p.x + q.x * p.w + q.y * p.z - q.z * p.y;
+	Q.y =   q.w * p.y - q.x * p.z + q.y * p.w + q.z * p.x;
+	Q.z =   q.w * p.z + q.x * p.y - q.y * p.x + q.z * p.w;
+    QuaternionNormalize(&Q);
+	return Q;
+}
+
+quaternion_t quaternionConjugate(quaternion_t q)
+{
+    return (quaternion_t){.w=q.w,.x=-q.x,.y=-q.y,.z=-q.z};
+}
 
 quaternion_t quaternionDivide(quaternion_t q, quaternion_t p)
 {
-	p.x*=-1;
-	p.y*=-1;
-	p.z*=-1;
+    QuaternionShortArc(&p);
+	p.x*=-1.0f;
+	p.y*=-1.0f;
+	p.z*=-1.0f;
 	return quaternionMultiply(q,p);
 }
 
-quaternion_t QuaternionNormalize(quaternion_t q)
+void QuaternionNormalize(quaternion_t *q)
 {
-    float norm = sqrtf( q.w*q.w+q.x*q.x+q.y*q.y+q.z*q.z);
+    float norm = sqrtf( q->w*q->w+q->x*q->x+q->y*q->y+q->z*q->z);
     if (norm==0)
         DEBUG_PRINT("CBC Error! The magnitude of the Quaternion is 0 !");
     else if(norm!=1)
     {
-        q.w/=norm;
-        q.x/=norm;
-        q.y/=norm;
-        q.z/=norm;
+        q->w/=norm;
+        q->x/=norm;
+        q->y/=norm;
+        q->z/=norm;
     }
-    return q;
+    QuaternionShortArc(q);
 }
 int FindMax(float a11,float a22,float a33);
 quaternion_t DCM2UnitQuat(CB_Vector3_t u1,CB_Vector3_t u2,CB_Vector3_t u3)
@@ -40,7 +60,7 @@ quaternion_t DCM2UnitQuat(CB_Vector3_t u1,CB_Vector3_t u2,CB_Vector3_t u3)
 	quaternion_t output;
 
     output.w= 0.5f*sqrtf(u1.x+u2.y+u3.z+1.0f); 
-    if(output.w>1e-6f||output.w<-1e-6f)
+    if(output.w!=0.0f)
     {
     output.x=(u2.z-u3.y)/(4.0f*output.w);
     output.y=(u3.x-u1.z)/(4.0f*output.w);
@@ -78,13 +98,17 @@ quaternion_t DCM2UnitQuat(CB_Vector3_t u1,CB_Vector3_t u2,CB_Vector3_t u3)
     }
     
     
-    output=QuaternionNormalize(output);
+    QuaternionNormalize(&output);
 
 	// DEBUG_PRINT("MOTOR_M (%f)\t(%f)\t(%f)\t(%f)\n", (double)u1.x,(double)u2.y,(double)u3.z,(double)output.w);
 
 	return output;
 }
-
+quaternion_t QuaternionRotation(quaternion_t q,quaternion_t r)
+{
+    return quaternionDivide(quaternionMultiply(q,r),q);
+    
+}
 int FindMax(float a11,float a22,float a33)
 {
     if(a11>a22)

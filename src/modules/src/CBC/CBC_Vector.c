@@ -10,19 +10,18 @@ float Vector3Norm(CB_Vector3_t input)
 CB_Vector3_t Vector3Cross(CB_Vector3_t VA,CB_Vector3_t VB)
 {
 	CB_Vector3_t output;
-	output.x=VA.y*VB.z-VA.x*VB.y;
+	output.x=VA.y*VB.z-VA.z*VB.y;
 	output.y=VA.z*VB.x-VA.x*VB.z;
 	output.z=VA.x*VB.y-VA.y*VB.x;
 	return output;
 }
 
-CB_Vector3_t Vector3Normalize(CB_Vector3_t input)
+void Vector3Normalize(CB_Vector3_t *input)
 {
 
-	float norm=Vector3Norm(input);
-	input.x/=norm;
-	input.y/=norm;
-	input.z/=norm;
-	return input;
+	float norm=Vector3Norm(*input);
+	input->x/=norm;
+	input->y/=norm;
+	input->z/=norm;
 }
 

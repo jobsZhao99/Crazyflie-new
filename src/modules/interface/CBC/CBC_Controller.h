@@ -2,14 +2,14 @@
 #define _CBC_CONTROLLER_H_
 #include "stabilizer_types.h"
 #include "CBC_Trajectory.h"
-// #define kp 36
-// #define kd 12
+#define kp 9
+#define kd 7
 
 
-#define kp 36
-#define kd 12
+// #define kp 0
+// #define kd 0
 #define kq 800.0f
-#define kw 60.0f
+#define kw 65.0f
 
 // position
 #define Kp_X kp
