@@ -1,5 +1,7 @@
 #ifndef _CBC_Trajectory_h_
 #define _CBC_Trajectory_h_
+#define CruiseStartTime 5.0f
+
 // #include "math.h"
 #include "stabilizer_types.h"
 
@@ -10,6 +12,9 @@ typedef enum CB_StateOfFliht_s
     CB_Cruise,
     CB_Landing
 }CB_StateOfFliht_t;
+
+
+
 
 
 typedef struct CB_State_s
@@ -24,5 +29,5 @@ bool CB_Planner_Init(uint32_t tick,CB_State_t state);
 bool CB_Planner_DisAbled(float z);
 bool CB_Planner_test();
 bool CB_NextState(uint32_t tick,CB_State_t *desireState,float z);
-
+float GetRuntime(uint32_t tick);
 #endif

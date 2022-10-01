@@ -8,17 +8,13 @@
 #include "math.h"
 #include "debug.h"
 static CB_State_t desireState;
-static float desire_yaw;
-static float desire_x;
-static float desire_y;
-static float desire_z;
 static CB_Vector3_t DirectionF;
 void CB_YawControl(CB_control_t *CB_control, const sensorData_t *sensors, const state_t *state,const uint32_t tick)
 {
 
     CB_Vector3_t u1,u2,u3,u2t;
     u3=DirectionF;
-    u2t=(CB_Vector3_t){.x=-sin( desire_yaw ),.y=cos(desire_yaw),.z=0.0f};
+    u2t=(CB_Vector3_t){.x=-sin( desireState.yaw ),.y=cos(desireState.yaw),.z=0.0f};
 	u1=Vector3Cross(u2t,u3);
     Vector3Normalize(&u1);
 	u2=Vector3Cross(u3,u1);
@@ -58,9 +54,9 @@ void CB_YawControl(CB_control_t *CB_control, const sensorData_t *sensors, const 
 
 void CB_PositionControl(CB_control_t *CB_control, const state_t *state,const uint32_t tick)
 {
-	float x=Kp_X*(desire_x-state->position.x)+Kd_X*(0.0f-state->velocity.x);
-	float y=Kp_Y*(desire_y-state->position.y)+Kd_Y*(0.0f-state->velocity.y);
-	float z=Kp_Z*(desire_z-state->position.z)+Kd_Z*(0.0f-state->velocity.z);
+	float x=Kp_X*(desireState.x-state->position.x)+Kd_X*(0.0f-state->velocity.x);
+	float y=Kp_Y*(desireState.y-state->position.y)+Kd_Y*(0.0f-state->velocity.y);
+	float z=Kp_Z*(desireState.z-state->position.z)+Kd_Z*(0.0f-state->velocity.z);
   
 	//Saturation   	
    	x = fminf(fmaxf(x,-MaxAcc),MaxAcc); 
@@ -90,16 +86,15 @@ void CB_Controller(CB_control_t *CB_control, setpoint_t *setpoint, const sensorD
 				CB_State_t tempState={.x=state->position.x,.y=state->position.y,.z=state->position.z,.yaw=(state->attitude.yaw/180.0f*M_PI_F)};
 				CB_Planner_Init(tick,tempState);
 			}
+
 			if(setpoint->thrust<2000.f)
 			{
 				CB_Planner_DisAbled(state->position.z);
 			}
 			CB_NextState(tick,&desireState,state->position.z);
-			desire_x=desireState.x;
-			desire_y=desireState.y;
-			desire_z=desireState.z;
-			desire_yaw=desireState.yaw;
-			// DEBUG_PRINT("CBC NOTICE:desire state (%f)\t(%f)\t(%f)\t(%f)\n",(double)desire_x,(double)desire_y,(double)desire_z,(double)desire_yaw);
+			// if(tick%200==0)
+			// DEBUG_PRINT("flight x%f\t%f\n",(double)desireState.x,(double)state->position.x);
+			// // DEBUG_PRINT("CBC NOTICE:desire state (%f)\t(%f)\t(%f)\t(%f)\n",(double)desire_x,(double)desire_y,(double)desire_z,(double)desire_yaw);
 			
 			
 			CB_PositionControl(CB_control,state,tick);

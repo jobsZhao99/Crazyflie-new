@@ -5,7 +5,10 @@ static float TimeRate = RATE_MAIN_LOOP;
 static bool TrajIsInit=false;
 static CB_State_t StartState;
 static uint32_t StartTime;
+/// @brief state of Drone
 static CB_StateOfFliht_t SoF=CB_Idel;
+
+static float runtime;
 /// @brief 
 /// @param tick 
 /// @param state Start state
@@ -57,35 +60,70 @@ bool CB_Planner_test()
 {
     return TrajIsInit;
 }
+
+
 bool CB_NextState(uint32_t tick,CB_State_t *desireState,float z)
 {
     // float runtime = (float)(StartTime-tick)/1000.0f;
-    desireState->x=StartState.x;
-    desireState->y=StartState.y;
+
+       float temp_t=GetRuntime(tick)-CruiseStartTime;
     switch (SoF)
     {
     case CB_Idel:
         /* code */
         break;
     case CB_TakeOff:
+        desireState->x=0.0f;
+        desireState->y=0.0f;
         desireState->z=0.5f;
-        break;
+        desireState->yaw=0.0f;
+        
+		if(temp_t>0.0f)
+		{
+		    SoF=CB_Cruise;
+            // DEBUG_PRINT("system is from takeoff to cruise\n");
+		}
+        else
+        {
+            break;
+        }
     case CB_Cruise:
+        
+        desireState->x=0.3f*(cosf(2*temp_t)-1.0f);
+        desireState->y=0.3f*sinf(2*temp_t);
+        desireState->z=0.5f;
+        desireState->yaw=0.0f;
+        // if(tick%200==0)
+        // {
+        //     DEBUG_PRINT("test time %f\n",(double)temp_t);
+
+        // DEBUG_PRINT("system is crusing desire state is (%f)\t(%f)\t(%f)\t(%f)\n",
+        // (double)desireState->x,
+        // (double)desireState->y,
+        // (double)desireState->z,
+        // (double)desireState->yaw);
+        // }
+        
         break;
     case CB_Landing:
+        desireState->x=0.0f;
+        desireState->y=0.0f;
         desireState->z=0.5f*z;
+        desireState->yaw=0.0f;
         break;
     default:
         break;
     }
     
-    desireState->yaw=StartState.yaw;
-    
+    desireState->yaw+=StartState.yaw;
+    desireState->x+=StartState.x;
+    desireState->y+=StartState.y;
+    desireState->z+=StartState.z;
+
     return true;
 }
 
-
-
-
-
-
+float GetRuntime(uint32_t tick)
+{
+    return runtime= (float)(tick-StartTime)/1000.0f;
+}

@@ -57,6 +57,7 @@
 #include "static_mem.h"
 #include "rateSupervisor.h"
 #include "CBC_Controller.h"
+#include "CBC_Controller.h"
 static bool isInit;
 static bool emergencyStop = false;
 static int emergencyStopTimeout = EMERGENCY_STOP_TIMEOUT_DISABLED;
@@ -71,8 +72,8 @@ static state_t state;
 static CB_control_t CB_Control;
 static motors_thrust_t motorPower;
 // For scratch storage - never logged or passed to other subsystems.
-static setpoint_t tempSetpoint;
-
+// static setpoint_t tempSetpoint;
+static CB_State_t CB_setpoint;
 static StateEstimatorType estimatorType;
 static ControllerType controllerType;
 
@@ -264,9 +265,9 @@ static void stabilizerTask(void* param)
       stateEstimator(&state, tick);
       compressState();
 
-      if (crtpCommanderHighLevelGetSetpoint(&tempSetpoint, &state, tick)) {
-        commanderSetSetpoint(&tempSetpoint, COMMANDER_PRIORITY_HIGHLEVEL);
-      }
+      // if (crtpCommanderHighLevelGetSetpoint(&tempSetpoint, &state, tick)) {
+      //   commanderSetSetpoint(&tempSetpoint, COMMANDER_PRIORITY_HIGHLEVEL);
+      // }
 
       commanderGetSetpoint(&setpoint, &state);
       compressSetpoint();
@@ -797,3 +798,44 @@ LOG_ADD(LOG_INT16, ratePitch, &stateCompressed.ratePitch)
  */
 LOG_ADD(LOG_INT16, rateYaw, &stateCompressed.rateYaw)
 LOG_GROUP_STOP(stateEstimateZ)
+
+
+LOG_GROUP_START(CB_Data)
+/**
+ * @brief The estimated position of the platform in the global reference frame, X [m]
+ */
+LOG_ADD_CORE(LOG_FLOAT, x, &state.position.x)
+
+/**
+ * @brief The estimated position of the platform in the global reference frame, Y [m]
+ */
+LOG_ADD_CORE(LOG_FLOAT, y, &state.position.y)
+
+/**
+ * @brief The estimated position of the platform in the global reference frame, Z [m]
+ */
+LOG_ADD_CORE(LOG_FLOAT, z, &state.position.z)
+/**
+ * @brief The estimated position of the platform in the global reference frame, Yaw [degree]
+ */
+LOG_ADD_CORE(LOG_FLOAT, yaw, &state.attitude.yaw)
+
+/**
+ * @brief The estimated position of the platform in the global reference frame, X [m]
+ */
+LOG_ADD_CORE(LOG_FLOAT, xd, &desireState.x)
+
+/**
+ * @brief The estimated position of the platform in the global reference frame, Y [m]
+ */
+LOG_ADD_CORE(LOG_FLOAT, yd, &desireState.y)
+
+/**
+ * @brief The estimated position of the platform in the global reference frame, Z [m]
+ */
+LOG_ADD_CORE(LOG_FLOAT, zd, &desireState.y)
+/**
+ * @brief The estimated position of the platform in the global reference frame, Yaw [degree]
+ */
+LOG_ADD_CORE(LOG_FLOAT, yawd, &desireState.yaw)
+LOG_GROUP_STOP(CB_Data)

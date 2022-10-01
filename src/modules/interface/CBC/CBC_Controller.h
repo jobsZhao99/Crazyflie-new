@@ -2,8 +2,8 @@
 #define _CBC_CONTROLLER_H_
 #include "stabilizer_types.h"
 #include "CBC_Trajectory.h"
-#define kp 9
-#define kd 7
+#define kp 9.0f
+#define kd 7.0f
 
 
 // #define kp 0
