@@ -43,9 +43,9 @@ void CB_powerDistribution(motors_thrust_t* motorPower, const CB_control_t *contr
 		
 		float a=0.25f,b=7.7f,c=41.9143f;
 		float term1=a*control->thrust;
-		float term2=b*control->torque_roll;
-		float term3=b*control->torque_pitch;
-		float term4=c*control->torque_yaw;
+		float term2=b*control->roll;
+		float term3=b*control->pitch;
+		float term4=c*control->yaw;
 
 		motorPower->m1=limitThrust(4.0f*(term1-term2-term3-term4)/(60.0f*9.81f*0.001f)*65535);
 		motorPower->m2=limitThrust(4.0f*(term1-term2+term3+term4)/(60.0f*9.81f*0.001f)*65535);

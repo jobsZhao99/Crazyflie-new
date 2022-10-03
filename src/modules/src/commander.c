@@ -36,7 +36,7 @@
 #include "cf_math.h"
 #include "param.h"
 #include "static_mem.h"
-
+#include "debug.h"
 static bool isInit;
 // Static structs are zero-initialized, so nullSetpoint corresponds to
 // modeDisable for all stab_mode_t members and zero for all physical values.
@@ -100,10 +100,10 @@ void commanderRelaxPriority()
 
 void commanderGetSetpoint(setpoint_t *setpoint, const state_t *state)
 {
+
   xQueuePeek(setpointQueue, setpoint, 0);
   lastUpdate = setpoint->timestamp;
   uint32_t currentTime = xTaskGetTickCount();
-
   if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_SHUTDOWN) {
     memcpy(setpoint, &nullSetpoint, sizeof(nullSetpoint));
   } else if ((currentTime - setpoint->timestamp) > COMMANDER_WDT_TIMEOUT_STABILIZE) {

@@ -191,6 +191,7 @@ void systemTask(void *arg)
   //Init the high-levels modules
   systemInit();
   commInit();
+  // commanderInit();
   commanderInit();
 
   StateEstimatorType estimator = anyEstimator;

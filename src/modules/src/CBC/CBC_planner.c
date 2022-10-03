@@ -1,10 +1,12 @@
-#include "CBC_Trajectory.h"
+#include "CBC_planner.h"
 #include "math.h"
 #include "debug.h"
+#include "stabilizer_types.h"
+#include "math3d.h"
 static float TimeRate = RATE_MAIN_LOOP;
 static bool TrajIsInit=false;
-static CB_State_t StartState;
 static uint32_t StartTime;
+static state_t StartState;
 /// @brief state of Drone
 static CB_StateOfFliht_t SoF=CB_Idel;
 
@@ -13,7 +15,7 @@ static float runtime;
 /// @param tick 
 /// @param state Start state
 /// @return 
-bool CB_Planner_Init(uint32_t tick,CB_State_t state)
+bool CB_planner_Init(uint32_t tick,state_t state)
 {
     if(TrajIsInit)
     {
@@ -23,22 +25,23 @@ bool CB_Planner_Init(uint32_t tick,CB_State_t state)
     else
     {
         StartState=state;
+        StartState.attitude.yaw*=M_PI_F/180.0f;
         StartTime=tick;
         TimeRate=RATE_MAIN_LOOP;
         SoF=CB_TakeOff;
-		DEBUG_PRINT("CBC NOTICE: Trajectory Initialized at (%ld)!\nTrajecory origin will base on (%f)\t(%f)\t(%f)\t(%f)\n",tick,(double)StartState.x,(double)StartState.y,(double)StartState.z,(double)StartState.yaw);
+		DEBUG_PRINT("CBC NOTICE: Trajectory Initialized at (%ld)!\nTrajecory origin will base on (%f)\t(%f)\t(%f)\t(%f)\n",tick,(double)StartState.position.x,(double)StartState.position.y,(double)StartState.position.z,(double)StartState.attitude.yaw);
         return TrajIsInit=true;
     }
 }
 
-bool CB_Planner_DisAbled(float z)
+bool CB_planner_DisAbled(float z)
 {
     if(TrajIsInit)
     {
         if(SoF==CB_Landing&&z<0.04f)
         {
             TrajIsInit=false;
-            StartState=(CB_State_t){.x=0.0f,.y=0.0f,.z=0.0f,.yaw=0.0f};
+            // StartState=(setpoint_t){.x=0.0f,.y=0.0f,.z=0.0f,.yaw=0.0f};
             DEBUG_PRINT("CBC NOTICE: Trajectory is disabled!\n");
             SoF=CB_Idel;
             return true;
@@ -56,27 +59,26 @@ bool CB_Planner_DisAbled(float z)
     }
 }
 
-bool CB_Planner_test()
+bool CB_planner_test()
 {
     return TrajIsInit;
 }
 
 
-bool CB_NextState(uint32_t tick,CB_State_t *desireState,float z)
+bool CB_plannerGetSetpoint(setpoint_t *setpoint,const state_t *state,uint32_t tick)
 {
-    // float runtime = (float)(StartTime-tick)/1000.0f;
-
-       float temp_t=GetRuntime(tick)-CruiseStartTime;
+    float temp_t=GetRuntime(tick)-CruiseStartTime;
     switch (SoF)
     {
     case CB_Idel:
         /* code */
         break;
     case CB_TakeOff:
-        desireState->x=0.0f;
-        desireState->y=0.0f;
-        desireState->z=0.5f;
-        desireState->yaw=0.0f;
+        setpoint->position.x=0.0f;
+        setpoint->position.x=0.0f;
+        setpoint->position.y=0.0f;
+        setpoint->position.z=0.5f;
+        setpoint->attitude.yaw=0.0f;
         
 		if(temp_t>0.0f)
 		{
@@ -89,37 +91,25 @@ bool CB_NextState(uint32_t tick,CB_State_t *desireState,float z)
         }
     case CB_Cruise:
         
-        desireState->x=0.3f*(cosf(2*temp_t)-1.0f);
-        desireState->y=0.3f*sinf(2*temp_t);
-        desireState->z=0.5f;
-        desireState->yaw=0.0f;
-        // if(tick%200==0)
-        // {
-        //     DEBUG_PRINT("test time %f\n",(double)temp_t);
-
-        // DEBUG_PRINT("system is crusing desire state is (%f)\t(%f)\t(%f)\t(%f)\n",
-        // (double)desireState->x,
-        // (double)desireState->y,
-        // (double)desireState->z,
-        // (double)desireState->yaw);
-        // }
-        
+        setpoint->position.x=0.3f*(cosf(2*temp_t)-1.0f);
+        setpoint->position.y=0.3f*sinf(2*temp_t);
+        setpoint->position.z=0.5f;
+        setpoint->attitude.yaw=0.0f;        
         break;
     case CB_Landing:
-        desireState->x=0.0f;
-        desireState->y=0.0f;
-        desireState->z=0.5f*z;
-        desireState->yaw=0.0f;
+        setpoint->position.x=0.0f;
+        setpoint->position.y=0.0f;
+        setpoint->position.z=0.5f*state->position.z;
+        setpoint->attitude.yaw=0.0f;  
         break;
     default:
         break;
     }
-    
-    desireState->yaw+=StartState.yaw;
-    desireState->x+=StartState.x;
-    desireState->y+=StartState.y;
-    desireState->z+=StartState.z;
 
+    setpoint->position.x+=StartState.position.x;
+    setpoint->position.y+=StartState.position.y;
+    setpoint->position.z+=StartState.position.z;
+    setpoint->attitude.yaw+=StartState.attitude.yaw;
     return true;
 }
 

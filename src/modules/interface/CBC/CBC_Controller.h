@@ -1,16 +1,14 @@
 #ifndef _CBC_CONTROLLER_H_
 #define _CBC_CONTROLLER_H_
 #include "stabilizer_types.h"
-#include "CBC_Trajectory.h"
 #define kp 9.0f
 #define kd 7.0f
-
-
-// #define kp 0
-// #define kd 0
 #define kq 800.0f
 #define kw 65.0f
-
+// #define kp 0.0f
+// #define kd 0.0f
+// #define kq 0.0f
+// #define kw 0.0f
 // position
 #define Kp_X kp
 #define Kp_Y kp
@@ -30,7 +28,7 @@
 
 #define mass 0.032f
 #define gravity 9.81f
-
+// #define gravity 0.0f
 #define MaxAcc 0.5f*gravity
 // #define MaxZAcc 15.0f
 
@@ -44,14 +42,6 @@
 #define Ixy 0.830806e-6f
 #define Ixz 0.718277e-6f
 #define Iyz 1.800197e-6f
-
-typedef struct CB_control_s {
-  float torque_roll;
-  float torque_pitch;
-  float torque_yaw;
-  float thrust;
-}CB_control_t;
-
 
 
 void CB_Controller(CB_control_t *CB_control, setpoint_t *setpoint, const sensorData_t *sensors, const state_t *state,const uint32_t tick);

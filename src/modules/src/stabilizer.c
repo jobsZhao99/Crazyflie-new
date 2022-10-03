@@ -26,7 +26,6 @@
 #define DEBUG_MODULE "STAB"
 
 #include <math.h>
-
 #include "FreeRTOS.h"
 #include "task.h"
 
@@ -41,7 +40,7 @@
 #include "stabilizer.h"
 
 #include "sensors.h"
-#include "commander.h"
+// #include "CBC_Commander.h"
 #include "crtp_commander_high_level.h"
 #include "crtp_localization_service.h"
 #include "controller.h"
@@ -57,7 +56,7 @@
 #include "static_mem.h"
 #include "rateSupervisor.h"
 #include "CBC_Controller.h"
-#include "CBC_Controller.h"
+#include "commander.h"
 static bool isInit;
 static bool emergencyStop = false;
 static int emergencyStopTimeout = EMERGENCY_STOP_TIMEOUT_DISABLED;
@@ -66,14 +65,16 @@ static uint32_t inToOutLatency;
 
 // State variables for the stabilizer
 static setpoint_t setpoint;
+// static setpoint CB_setpoint;
 static sensorData_t sensorData;
 static state_t state;
 // static control_t control;
-static CB_control_t CB_Control;
+// static control_t control;
+static CB_control_t CB_control;
 static motors_thrust_t motorPower;
 // For scratch storage - never logged or passed to other subsystems.
 // static setpoint_t tempSetpoint;
-static CB_State_t CB_setpoint;
+
 static StateEstimatorType estimatorType;
 static ControllerType controllerType;
 
@@ -268,28 +269,24 @@ static void stabilizerTask(void* param)
       // if (crtpCommanderHighLevelGetSetpoint(&tempSetpoint, &state, tick)) {
       //   commanderSetSetpoint(&tempSetpoint, COMMANDER_PRIORITY_HIGHLEVEL);
       // }
-
       commanderGetSetpoint(&setpoint, &state);
       compressSetpoint();
-
-      // collisionAvoidanceUpdateSetpoint(&setpoint, &sensorData, &state, tick);
+      
+      collisionAvoidanceUpdateSetpoint(&setpoint, &sensorData, &state, tick);
 
       // controller(&control, &setpoint, &sensorData, &state, tick);
-      CB_Controller(&CB_Control,&setpoint,&sensorData,&state,tick);
+      CB_Controller(&CB_control,&setpoint,&sensorData,&state,tick);
       checkEmergencyStopTimeout();
-
+      
       //
       // The supervisor module keeps track of Crazyflie state such as if
       // we are ok to fly, or if the Crazyflie is in flight.
       //
-      // supervisorUpdate(&sensorData);
-	// if(tick%100==0)
-	// 	DEBUG_PRINT("(%f)\t(%f)\t(%f)\n",(double)sensorData.gyro.x,(double)sensorData.gyro.y,(double)sensorData.gyro.z);
-	
+      supervisorUpdate(&sensorData);
       if (emergencyStop || (systemIsArmed() == false)) {
         motorsStop();
       } else {
-         CB_powerDistribution(&motorPower, &CB_Control);
+        CB_powerDistribution(&motorPower, &CB_control);
         motorsSetRatio(MOTOR_M1, motorPower.m1);
         motorsSetRatio(MOTOR_M2, motorPower.m2);
         motorsSetRatio(MOTOR_M3, motorPower.m3);
@@ -337,6 +334,9 @@ void stabilizerSetEmergencyStopTimeout(int timeout)
   emergencyStop = false;
   emergencyStopTimeout = timeout;
 }
+
+
+
 
 /**
  * Parameters to set the estimator and controller type
@@ -505,7 +505,7 @@ LOG_ADD(LOG_FLOAT, yaw, &state.attitude.yaw)
 /**
  * @brief Current thrust
  */
-LOG_ADD(LOG_FLOAT, thrust, &CB_Control.thrust)
+LOG_ADD(LOG_FLOAT, thrust, &setpoint.thrust)
 /**
  * @brief Rate of stabilizer loop
  */
@@ -823,19 +823,19 @@ LOG_ADD_CORE(LOG_FLOAT, yaw, &state.attitude.yaw)
 /**
  * @brief The estimated position of the platform in the global reference frame, X [m]
  */
-LOG_ADD_CORE(LOG_FLOAT, xd, &desireState.x)
+LOG_ADD_CORE(LOG_FLOAT, xd, &setpoint.position.x)
 
 /**
  * @brief The estimated position of the platform in the global reference frame, Y [m]
  */
-LOG_ADD_CORE(LOG_FLOAT, yd, &desireState.y)
+LOG_ADD_CORE(LOG_FLOAT, yd, &setpoint.position.y)
 
 /**
  * @brief The estimated position of the platform in the global reference frame, Z [m]
  */
-LOG_ADD_CORE(LOG_FLOAT, zd, &desireState.y)
+LOG_ADD_CORE(LOG_FLOAT, zd, &setpoint.position.z)
 /**
- * @brief The estimated position of the platform in the global reference frame, Yaw [degree]
+ * @brief The estimated position of the platform in the global reference frame, Yaw [rad]
  */
-LOG_ADD_CORE(LOG_FLOAT, yawd, &desireState.yaw)
+LOG_ADD_CORE(LOG_FLOAT, yawd, &setpoint.attitude.yaw)
 LOG_GROUP_STOP(CB_Data)
