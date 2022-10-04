@@ -799,7 +799,6 @@ LOG_ADD(LOG_INT16, ratePitch, &stateCompressed.ratePitch)
 LOG_ADD(LOG_INT16, rateYaw, &stateCompressed.rateYaw)
 LOG_GROUP_STOP(stateEstimateZ)
 
-
 LOG_GROUP_START(CB_Data)
 /**
  * @brief The estimated position of the platform in the global reference frame, X [m]

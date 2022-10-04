@@ -94,6 +94,9 @@ bool CB_plannerGetSetpoint(setpoint_t *setpoint,const state_t *state,uint32_t ti
         setpoint->position.x=0.3f*(cosf(2*temp_t)-1.0f);
         setpoint->position.y=0.3f*sinf(2*temp_t);
         setpoint->position.z=0.5f;
+        setpoint->acceleration.x=0.3f*2.0f*(-sinf(2*temp_t));
+        setpoint->acceleration.y=0.3f*2.0f*cosf(2*temp_t);
+        setpoint->acceleration.z=0.0f;
         setpoint->attitude.yaw=0.0f;        
         break;
     case CB_Landing:

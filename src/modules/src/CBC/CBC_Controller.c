@@ -62,10 +62,9 @@ void CB_PositionControl(CB_control_t *CB_control,setpoint_t *setpoint, const sta
    	z = fminf(fmaxf(z,-MaxAcc),MaxAcc);
 
     
-	DirectionF.x=x;
-	DirectionF.y=y;
-	DirectionF.z=z+gravity;
-
+	DirectionF.x=x+setpoint->acceleration.x;
+	DirectionF.y=y+setpoint->acceleration.y;
+	DirectionF.z=z+setpoint->acceleration.z+gravity;
 	// this two step can not be exchange
 	CB_control->thrust=Vector3Norm(DirectionF)*mass;
 	Vector3Normalize(&DirectionF);
