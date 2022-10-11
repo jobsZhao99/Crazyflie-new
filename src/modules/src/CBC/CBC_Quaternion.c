@@ -26,6 +26,32 @@ quaternion_t quaternionMultiply(quaternion_t q, quaternion_t p)
 	return Q;
 }
 
+quaternion_t quaternionMultiplyNoNormalize(quaternion_t q, quaternion_t p)
+{
+    quaternion_t Q;
+
+	Q.w =   q.w * p.w - q.x * p.x - q.y * p.y - q.z * p.z;
+	Q.x =   q.w * p.x + q.x * p.w + q.y * p.z - q.z * p.y;
+	Q.y =   q.w * p.y - q.x * p.z + q.y * p.w + q.z * p.x;
+	Q.z =   q.w * p.z + q.x * p.y - q.y * p.x + q.z * p.w;
+	return Q;
+}
+
+/// @brief q-p
+/// @param q 
+/// @param p 
+/// @return 
+quaternion_t quaternionSubtract(quaternion_t q, quaternion_t p)
+{
+     quaternion_t Q;
+
+	Q.w =   q.w-p.w;
+	Q.x =   q.x-p.x;
+	Q.y =   q.y-p.y;
+	Q.z =   q.z-p.z;
+    return Q;
+}
+
 quaternion_t quaternionConjugate(quaternion_t q)
 {
     return (quaternion_t){.w=q.w,.x=-q.x,.y=-q.y,.z=-q.z};

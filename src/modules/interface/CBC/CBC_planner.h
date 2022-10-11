@@ -14,8 +14,10 @@ typedef enum CB_StateOfFliht_s
 }CB_StateOfFliht_t;
 
 
+
 bool CB_planner_Init(uint32_t tick,state_t state);
 bool CB_planner_DisAbled(float z);
+void CB_planner_EmergencyStop();
 bool CB_planner_test();
 bool CB_plannerGetSetpoint(setpoint_t *setpoint,const state_t *state,uint32_t tick);
 float GetRuntime(uint32_t tick);

@@ -814,10 +814,10 @@ LOG_ADD_CORE(LOG_FLOAT, y, &state.position.y)
  * @brief The estimated position of the platform in the global reference frame, Z [m]
  */
 LOG_ADD_CORE(LOG_FLOAT, z, &state.position.z)
-/**
- * @brief The estimated position of the platform in the global reference frame, Yaw [degree]
- */
-LOG_ADD_CORE(LOG_FLOAT, yaw, &state.attitude.yaw)
+// /**
+//  * @brief The estimated position of the platform in the global reference frame, Yaw [degree]
+//  */
+// LOG_ADD_CORE(LOG_FLOAT, yaw, &state.attitude.yaw)
 
 /**
  * @brief The estimated position of the platform in the global reference frame, X [m]
@@ -833,8 +833,18 @@ LOG_ADD_CORE(LOG_FLOAT, yd, &setpoint.position.y)
  * @brief The estimated position of the platform in the global reference frame, Z [m]
  */
 LOG_ADD_CORE(LOG_FLOAT, zd, &setpoint.position.z)
-/**
- * @brief The estimated position of the platform in the global reference frame, Yaw [rad]
- */
-LOG_ADD_CORE(LOG_FLOAT, yawd, &setpoint.attitude.yaw)
+// /**
+//  * @brief The estimated position of the platform in the global reference frame, Yaw [rad]
+//  */
+// LOG_ADD_CORE(LOG_FLOAT, yawd, &setpoint.attitude.yaw)
+
+LOG_ADD_CORE(LOG_FLOAT, qwd, &setpoint.attitudeQuaternion.w)
+LOG_ADD_CORE(LOG_FLOAT, qxd, &setpoint.attitudeQuaternion.x)
+LOG_ADD_CORE(LOG_FLOAT, qyd, &setpoint.attitudeQuaternion.y)
+LOG_ADD_CORE(LOG_FLOAT, qzd, &setpoint.attitudeQuaternion.z)
+
+LOG_ADD_CORE(LOG_FLOAT, qw, &state.attitudeQuaternion.w)
+LOG_ADD_CORE(LOG_FLOAT, qx, &state.attitudeQuaternion.x)
+LOG_ADD_CORE(LOG_FLOAT, qy, &state.attitudeQuaternion.y)
+LOG_ADD_CORE(LOG_FLOAT, qz, &state.attitudeQuaternion.z)
 LOG_GROUP_STOP(CB_Data)

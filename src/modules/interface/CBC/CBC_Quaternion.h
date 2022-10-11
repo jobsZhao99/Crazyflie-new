@@ -5,6 +5,7 @@
 #include "CBC_Vector.h"
 void QuaternionShortArc(quaternion_t *q);
 quaternion_t quaternionMultiply(quaternion_t q, quaternion_t p);
+quaternion_t quaternionMultiplyNoNormalize(quaternion_t q, quaternion_t p);
 quaternion_t quaternionConjugate(quaternion_t q);
 quaternion_t quaternionDivide(quaternion_t q, quaternion_t p);
 void QuaternionNormalize(quaternion_t *q);

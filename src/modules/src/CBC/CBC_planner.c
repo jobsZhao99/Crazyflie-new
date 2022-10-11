@@ -59,6 +59,11 @@ bool CB_planner_DisAbled(float z)
     }
 }
 
+void CB_planner_EmergencyStop()
+{
+    TrajIsInit=false;
+}
+
 bool CB_planner_test()
 {
     return TrajIsInit;
@@ -68,51 +73,64 @@ bool CB_planner_test()
 bool CB_plannerGetSetpoint(setpoint_t *setpoint,const state_t *state,uint32_t tick)
 {
     float temp_t=GetRuntime(tick)-CruiseStartTime;
+    
+        setpoint->position.x =StartState.position.x;
+        setpoint->position.y =StartState.position.y;
+        setpoint->position.z =StartState.position.z;
+        setpoint->attitude.yaw =StartState.attitude.yaw+setpoint->attitude.roll;
+        //velocity
+        setpoint->velocity.x=0.0f;
+        setpoint->velocity.y=0.0f;
+        setpoint->velocity.z=0.0f;
+        
+
+        //accelaration
+        // setpoint->acceleration.x=0.3f*4.0f*(-cosf(2.0f*temp_t));
+        setpoint->acceleration.x=0.0f;
+        setpoint->acceleration.y=0.0f;
+        setpoint->acceleration.z=0.0f;
+float r=0.15f;
     switch (SoF)
     {
     case CB_Idel:
         /* code */
         break;
     case CB_TakeOff:
-        setpoint->position.x=0.0f;
-        setpoint->position.x=0.0f;
-        setpoint->position.y=0.0f;
-        setpoint->position.z=0.5f;
-        setpoint->attitude.yaw=0.0f;
+    //position
+
+        setpoint->position.z+=0.5f;
+
         
 		if(temp_t>0.0f)
 		{
 		    SoF=CB_Cruise;
             // DEBUG_PRINT("system is from takeoff to cruise\n");
 		}
-        else
-        {
-            break;
-        }
+        break;
     case CB_Cruise:
         
-        setpoint->position.x=0.3f*(cosf(2*temp_t)-1.0f);
-        setpoint->position.y=0.3f*sinf(2*temp_t);
-        setpoint->position.z=0.5f;
-        setpoint->acceleration.x=0.3f*2.0f*(-sinf(2*temp_t));
-        setpoint->acceleration.y=0.3f*2.0f*cosf(2*temp_t);
-        setpoint->acceleration.z=0.0f;
-        setpoint->attitude.yaw=0.0f;        
+        
+        //position
+        setpoint->position.x+=r*(cosf(2.0f*temp_t)-1.0f);
+        setpoint->position.y+=r*sinf(2.0f*temp_t);
+        setpoint->position.z+=0.5f;
+
+
+        //velocity
+        setpoint->velocity.x=r*2.0f*(-sinf(2.0f*temp_t));
+        setpoint->velocity.y=r*2.0f*(cosf(2.0f*temp_t));
+
+        //accelaration
+        setpoint->acceleration.x=r*4.0f*(-cosf(2.0f*temp_t));
+        setpoint->acceleration.y=r*4.0f*(-sinf(2.0f*temp_t));
+
         break;
     case CB_Landing:
-        setpoint->position.x=0.0f;
-        setpoint->position.y=0.0f;
-        setpoint->position.z=0.5f*state->position.z;
-        setpoint->attitude.yaw=0.0f;  
+        setpoint->position.z+=0.5f*state->position.z;
         break;
     default:
         break;
     }
-
-    setpoint->position.x+=StartState.position.x;
-    setpoint->position.y+=StartState.position.y;
-    setpoint->position.z+=StartState.position.z;
-    setpoint->attitude.yaw+=StartState.attitude.yaw;
     return true;
 }
 

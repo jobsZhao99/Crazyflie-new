@@ -1,10 +1,10 @@
 #ifndef _CBC_CONTROLLER_H_
 #define _CBC_CONTROLLER_H_
 #include "stabilizer_types.h"
-#define kp 12.0f
-#define kd 9.0f
-#define kq 800.0f
-#define kw 65.0f
+#define kp 11.0f
+#define kd 8.0f
+#define kq 600.0f
+#define kw 55.0f
 // #define kp 0.0f
 // #define kd 0.0f
 // #define kq 0.0f
@@ -26,7 +26,7 @@
 #define Kw_Pitch  kw
 #define Kw_Yaw kw
 
-#define mass 0.033f
+#define mass 0.036f
 #define gravity 9.81f
 // #define gravity 0.0f
 #define MaxAcc 0.5f*gravity
@@ -45,4 +45,5 @@
 
 
 void CB_Controller(CB_control_t *CB_control, setpoint_t *setpoint, const sensorData_t *sensors, const state_t *state,const uint32_t tick);
+quaternion_t quaternionSubtract(quaternion_t q, quaternion_t p);
 #endif
