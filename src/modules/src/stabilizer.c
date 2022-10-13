@@ -81,7 +81,7 @@ static ControllerType controllerType;
 static STATS_CNT_RATE_DEFINE(stabilizerRate, 500);
 static rateSupervisor_t rateSupervisorContext;
 static bool rateWarningDisplayed = false;
-
+float YawinRad;
 static struct {
   // position - mm
   int16_t x;
@@ -273,7 +273,7 @@ static void stabilizerTask(void* param)
       compressSetpoint();
       
       collisionAvoidanceUpdateSetpoint(&setpoint, &sensorData, &state, tick);
-
+      YawinRad=state.attitude.yaw/180.0f*M_PI_F;
       // controller(&control, &setpoint, &sensorData, &state, tick);
       CB_Controller(&CB_control,&setpoint,&sensorData,&state,tick);
       checkEmergencyStopTimeout();
@@ -317,6 +317,7 @@ static void stabilizerTask(void* param)
     motorsBurstDshot();
 #endif
   }
+  
 }
 
 void stabilizerSetEmergencyStop()
@@ -838,13 +839,7 @@ LOG_ADD_CORE(LOG_FLOAT, zd, &setpoint.position.z)
 //  */
 // LOG_ADD_CORE(LOG_FLOAT, yawd, &setpoint.attitude.yaw)
 
-LOG_ADD_CORE(LOG_FLOAT, qwd, &setpoint.attitudeQuaternion.w)
-LOG_ADD_CORE(LOG_FLOAT, qxd, &setpoint.attitudeQuaternion.x)
-LOG_ADD_CORE(LOG_FLOAT, qyd, &setpoint.attitudeQuaternion.y)
-LOG_ADD_CORE(LOG_FLOAT, qzd, &setpoint.attitudeQuaternion.z)
+LOG_ADD_CORE(LOG_FLOAT, Yaw, &YawinRad)
+LOG_ADD_CORE(LOG_FLOAT, Yawd,&setpoint.attitude.yaw)
 
-LOG_ADD_CORE(LOG_FLOAT, qw, &state.attitudeQuaternion.w)
-LOG_ADD_CORE(LOG_FLOAT, qx, &state.attitudeQuaternion.x)
-LOG_ADD_CORE(LOG_FLOAT, qy, &state.attitudeQuaternion.y)
-LOG_ADD_CORE(LOG_FLOAT, qz, &state.attitudeQuaternion.z)
 LOG_GROUP_STOP(CB_Data)

@@ -42,6 +42,7 @@
 #define Ixy 0.830806e-6f
 #define Ixz 0.718277e-6f
 #define Iyz 1.800197e-6f
+// #define CBHZ 100
 
 
 void CB_Controller(CB_control_t *CB_control, setpoint_t *setpoint, const sensorData_t *sensors, const state_t *state,const uint32_t tick);

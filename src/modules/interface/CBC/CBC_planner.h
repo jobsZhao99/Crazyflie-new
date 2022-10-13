@@ -1,7 +1,8 @@
 #ifndef _CBC_planner_h_
 #define _CBC_planner_h_
 #define CruiseStartTime 5.0f
-
+// height of flight
+#define HoF 0.5f
 // #include "math.h"
 #include "stabilizer_types.h"
 
@@ -16,7 +17,7 @@ typedef enum CB_StateOfFliht_s
 
 
 bool CB_planner_Init(uint32_t tick,state_t state);
-bool CB_planner_DisAbled(float z);
+bool CB_planner_DisAbled(state_t state,uint32_t tick);
 void CB_planner_EmergencyStop();
 bool CB_planner_test();
 bool CB_plannerGetSetpoint(setpoint_t *setpoint,const state_t *state,uint32_t tick);
